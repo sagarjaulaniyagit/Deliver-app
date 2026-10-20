@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['userId', 'name', 'email', 'role']) &&
+             data.userId is string &&
+             data.name is string &&
+             data.email is string &&
+             (data.role == 'CUSTOMER' || data.role == 'DRIVER');
+    }
+
+    function isValidDeliveryOrder(data) {
+      return data.keys().hasAll(['id', 'userId', 'trackingCode', 'pickupAddress', 'dropoffAddress', 'fare', 'status']) &&
+             data.id is string &&
+             data.userId is string &&
+             data.trackingCode is string &&
+             data.pickupAddress is string &&
+             data.dropoffAddress is string &&
+             data.fare is number &&
+             data.status is string;
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create, update: if isOwner(userId) && isValidUserProfile(request.resource.data) && request.resource.data.userId == userId;
+      allow delete: if isOwner(userId);
+
+      match /orders/{orderId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidDeliveryOrder(request.resource.data) && request.resource.data.userId == userId;
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

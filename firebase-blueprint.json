@@ -1,0 +1,45 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile for customer or courier driver",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["CUSTOMER", "DRIVER"] },
+        "walletBalance": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "name", "email", "role"]
+    },
+    "DeliveryOrder": {
+      "title": "DeliveryOrder",
+      "description": "Courier delivery order record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "trackingCode": { "type": "string" },
+        "pickupAddress": { "type": "string" },
+        "dropoffAddress": { "type": "string" },
+        "fare": { "type": "number" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "trackingCode", "pickupAddress", "dropoffAddress", "fare", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Stores user profile and account information"
+    },
+    "/users/{userId}/orders/{orderId}": {
+      "schema": "DeliveryOrder",
+      "description": "Stores delivery orders authored by this user"
+    }
+  }
+}
